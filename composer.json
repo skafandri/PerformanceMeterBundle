@@ -1,0 +1,17 @@
+{
+  "name": "skafandri/performance-meter-bundle",
+  "autoload": {
+    "psr-4": {
+      "Skafandri\\PerformanceMeterBundle\\": "src/"
+    }
+  },
+  "require": {
+    "symfony/http-foundation": "^3.2",
+    "symfony/stopwatch": "^3.2",
+    "psr/log": "^1.0",
+    "symfony/http-kernel": "^3.2",
+    "symfony/event-dispatcher": "^3.2",
+    "symfony/dependency-injection": "^3.2",
+    "symfony/config": "^3.2"
+  }
+}
