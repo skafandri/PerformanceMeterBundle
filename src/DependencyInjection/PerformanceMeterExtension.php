@@ -14,6 +14,11 @@ class PerformanceMeterExtension extends Extension
     {
         $locator = new FileLocator(array(__DIR__ . '/../../Resources/config'));
         $loader = new XmlFileLoader($container, $locator);
-        $loader->load('services.xml');
+
+        $config = $this->processConfiguration(new Configuration(), $configs);
+
+        if ($this->isConfigEnabled($container, $config)) {
+            $loader->load('services.xml');
+        }
     }
 }
