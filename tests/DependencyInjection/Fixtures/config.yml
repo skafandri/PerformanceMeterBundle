@@ -1,1 +1,6 @@
 performance_meter:
+  loggers:
+    logger1:
+      metric: request
+    logger2:
+      metric: request
