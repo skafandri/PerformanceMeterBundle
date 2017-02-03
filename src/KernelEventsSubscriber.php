@@ -11,8 +11,8 @@ use Symfony\Component\Stopwatch\Stopwatch;
 
 class KernelEventsSubscriber implements EventSubscriberInterface
 {
-    /** @var  RequestLogger */
-    private $requestLogger;
+    /** @var  RequestLogger[] */
+    private $requestLoggers = array();
     /** @var  Stopwatch */
     private $stopwatch;
 
@@ -20,9 +20,8 @@ class KernelEventsSubscriber implements EventSubscriberInterface
      * KernelEventsSubscriber constructor.
      * @param RequestLogger $requestLogger
      */
-    public function __construct(RequestLogger $requestLogger)
+    public function __construct()
     {
-        $this->requestLogger = $requestLogger;
         $this->stopwatch = new Stopwatch();
     }
 
@@ -36,7 +35,9 @@ class KernelEventsSubscriber implements EventSubscriberInterface
     public function onKernelResponse(FilterResponseEvent $event)
     {
         $duration = $this->stopwatch->stop('request')->getDuration();
-        $this->requestLogger->logRequest($event->getRequest(), $duration);
+        foreach ($this->requestLoggers as $logger) {
+            $logger->logRequest($event->getRequest(), $duration);
+        }
     }
 
     public static function getSubscribedEvents()
@@ -45,5 +46,10 @@ class KernelEventsSubscriber implements EventSubscriberInterface
             KernelEvents::REQUEST => 'onKernelRequest',
             KernelEvents::RESPONSE => 'onKernelResponse'
         );
+    }
+
+    public function addLogger(RequestLogger $logger)
+    {
+        $this->requestLoggers[] = $logger;
     }
 }

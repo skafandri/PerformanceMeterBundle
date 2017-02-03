@@ -5,12 +5,8 @@
         http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="performance_meter.request_logger" class="Skafandri\PerformanceMeterBundle\RequestLogger">
-            <argument type="service" id="logger" on-invalid="null"/>
-        </service>
         <service id="performance_meter.kernel_events_subscriber"
                  class="Skafandri\PerformanceMeterBundle\KernelEventsSubscriber">
-            <argument type="service" id="performance_meter.request_logger"/>
             <tag name="kernel.event_subscriber"/>
         </service>
     </services>

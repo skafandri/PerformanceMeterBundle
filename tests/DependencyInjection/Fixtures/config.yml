@@ -1,6 +1,6 @@
 performance_meter:
   loggers:
     logger1:
-      metric: request
+      #metric: request
     logger2:
-      metric: request
+      #metric: request

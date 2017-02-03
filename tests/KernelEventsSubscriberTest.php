@@ -27,13 +27,15 @@ class KernelEventsSubscriberTest extends TestCase
             ->willReturn($request);
 
         $mockRequestLogger = $this->getMockBuilder(RequestLogger::class)->getMock();
-        $mockRequestLogger->expects($this->once())
+        $mockRequestLogger->expects($this->exactly(2))
             ->method('logRequest')
             ->with($this->callback(function ($requestArgument) use ($request) {
                 return $requestArgument === $request;
             }));
 
-        $eventSubscriber = new  KernelEventsSubscriber($mockRequestLogger);
+        $eventSubscriber = new  KernelEventsSubscriber();
+        $eventSubscriber->addLogger($mockRequestLogger);
+        $eventSubscriber->addLogger($mockRequestLogger);
         $eventSubscriber->onKernelRequest($mockGetResponseEvent);
         $eventSubscriber->onKernelResponse($mockFilterResponseEvent);
     }

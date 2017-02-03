@@ -14,20 +14,21 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class PerformanceMeterExtensionTest extends TestCase
 {
-    public function test_registers_request_logger()
+    public function test_registers_request_loggers()
     {
         $container = $this->createContainer();
         $container->compile();
 
-        $requestLoggerDefinition = $container->getDefinition('performance_meter.request_logger');
-
-        $this->assertEquals(RequestLogger::class, $requestLoggerDefinition->getClass());
-        $this->assertEquals(
-            array(
-                new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE)
-            ),
-            $requestLoggerDefinition->getArguments()
-        );
+        foreach (array('logger1', 'logger2') as $logger) {
+            $requestLogger1Definition = $container->getDefinition('performance_meter.request.' . $logger);
+            $this->assertEquals(RequestLogger::class, $requestLogger1Definition->getClass());
+            $this->assertEquals(
+                array(
+                    new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE)
+                ),
+                $requestLogger1Definition->getArguments()
+            );
+        }
     }
 
     public function test_registers_kernel_event_subscriber()
@@ -40,9 +41,21 @@ class PerformanceMeterExtensionTest extends TestCase
         $this->assertEquals(KernelEventsSubscriber::class, $eventSubscriberDefinition->getClass());
         $this->assertEquals(
             array(
-                new Reference('performance_meter.request_logger')
-            ),
-            $eventSubscriberDefinition->getArguments()
+                array(
+                    'addLogger',
+                    array(
+                        new Reference('performance_meter.request.logger1')
+                    )
+                ),
+                array(
+                    'addLogger',
+                    array(
+                        new Reference('performance_meter.request.logger2')
+                    )
+                ),
+            )
+            ,
+            $eventSubscriberDefinition->getMethodCalls()
         );
         $this->assertEquals(
             array('kernel.event_subscriber' => array(array())),
