@@ -31,6 +31,9 @@ class PerformanceMeterExtension extends Extension
         $loggerReference = new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE);
         $eventSubscriberDefinition = $container->getDefinition('performance_meter.kernel_events_subscriber');
         foreach ($config['loggers'] as $name => $logger) {
+            if ($logger['metric'] !== 'request') {
+                continue;
+            }
             $id = 'performance_meter.request.' . $name;
             $container->register($id, RequestLogger::class)->addArgument($loggerReference);
             $eventSubscriberDefinition->addMethodCall('addLogger', array(new Reference($id)));

@@ -20,13 +20,13 @@ class PerformanceMeterExtensionTest extends TestCase
         $container->compile();
 
         foreach (array('logger1', 'logger2') as $logger) {
-            $requestLogger1Definition = $container->getDefinition('performance_meter.request.' . $logger);
-            $this->assertEquals(RequestLogger::class, $requestLogger1Definition->getClass());
+            $requestLoggerDefinition = $container->getDefinition('performance_meter.request.' . $logger);
+            $this->assertEquals(RequestLogger::class, $requestLoggerDefinition->getClass());
             $this->assertEquals(
                 array(
                     new Reference('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE)
                 ),
-                $requestLogger1Definition->getArguments()
+                $requestLoggerDefinition->getArguments()
             );
         }
     }
