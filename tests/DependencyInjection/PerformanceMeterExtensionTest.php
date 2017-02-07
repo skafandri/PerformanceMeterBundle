@@ -2,6 +2,7 @@
 
 namespace Skafandri\PerformanceMeterBundle\Tests\DependencyInjection;
 
+use Doctrine\DBAL\Logging\LoggerChain;
 use PHPUnit\Framework\TestCase;
 use Skafandri\PerformanceMeterBundle\DependencyInjection\PerformanceMeterExtension;
 use Skafandri\PerformanceMeterBundle\KernelEventsSubscriber;
@@ -75,6 +76,49 @@ class PerformanceMeterExtensionTest extends TestCase
 
         $this->assertFalse($container->has('performance_meter.request_logger'));
         $this->assertFalse($container->has('performance_meter.kernel_events_subscriber'));
+    }
+
+    public function test_registers_logger_chain()
+    {
+        $container = $this->createContainer();
+        $container->compile();
+
+        $loggerChainDefinition = $container->getDefinition('performance_meter.logger_chain');
+
+        $this->assertEquals(LoggerChain::class, $loggerChainDefinition->getClass());
+        $this->assertEquals(
+            array(
+                array(
+                    'addLogger',
+                    array(
+                        new Reference('performance_meter.sql.logger3')
+                    )
+                ),
+            )
+            ,
+            $loggerChainDefinition->getMethodCalls()
+        );
+    }
+
+    public function test_calls_configuration_setSQLLogger_with_logger_chain()
+    {
+        $container = $this->createContainer();
+        $container->compile();
+
+        $configurationDefinition = $container->getDefinition('doctrine.dbal.connection.configuration');
+
+        $this->assertEquals(
+            array(
+                array(
+                    'setSQLLogger',
+                    array(
+                        new Reference('performance_meter.logger_chain')
+                    )
+                ),
+            )
+            ,
+            $configurationDefinition->getMethodCalls()
+        );
     }
 
     private function createContainer()

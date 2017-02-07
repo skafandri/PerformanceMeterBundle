@@ -9,5 +9,6 @@
                  class="Skafandri\PerformanceMeterBundle\KernelEventsSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
+        <service id="performance_meter.logger_chain" class="Doctrine\DBAL\Logging\LoggerChain"/>
     </services>
 </container>
