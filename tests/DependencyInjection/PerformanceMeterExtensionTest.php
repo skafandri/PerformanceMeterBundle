@@ -2,15 +2,18 @@
 
 namespace Skafandri\PerformanceMeterBundle\Tests\DependencyInjection;
 
+use Doctrine\Bundle\DoctrineBundle\DependencyInjection\DoctrineExtension;
 use Doctrine\DBAL\Logging\LoggerChain;
 use PHPUnit\Framework\TestCase;
 use Skafandri\PerformanceMeterBundle\DependencyInjection\PerformanceMeterExtension;
 use Skafandri\PerformanceMeterBundle\KernelEventsSubscriber;
+use Skafandri\PerformanceMeterBundle\PerformanceMeterBundle;
 use Skafandri\PerformanceMeterBundle\RequestLogger;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\DependencyInjection\Reference;
 
 class PerformanceMeterExtensionTest extends TestCase
@@ -100,39 +103,42 @@ class PerformanceMeterExtensionTest extends TestCase
         );
     }
 
-    public function test_calls_configuration_setSQLLogger_with_logger_chain()
+    public function test_calls_doctrine_connection_configuration_setSQLLogger_with_logger_chain()
     {
         $container = $this->createContainer();
         $container->compile();
 
-        $configurationDefinition = $container->getDefinition('doctrine.dbal.connection.configuration');
-
-        $this->assertEquals(
-            array(
+        foreach (array('conn1', 'conn2') as $name) {
+            $configurationDefinition = $container->getDefinition('doctrine.dbal.' . $name . '_connection.configuration');
+            $this->assertEquals(
                 array(
-                    'setSQLLogger',
                     array(
-                        new Reference('performance_meter.logger_chain')
-                    )
-                ),
-            )
-            ,
-            $configurationDefinition->getMethodCalls()
-        );
+                        'setSQLLogger',
+                        array(
+                            new Reference('performance_meter.logger_chain')
+                        )
+                    ),
+                )
+                ,
+                $configurationDefinition->getMethodCalls()
+            );
+        }
     }
 
     private function createContainer()
     {
-        $container = new ContainerBuilder();
+        $container = new ContainerBuilder(new ParameterBag(array('kernel.debug' => false)));
 
+        $container->registerExtension(new DoctrineExtension());
         $container->registerExtension(new PerformanceMeterExtension());
 
         $locator = new FileLocator(__DIR__ . '/Fixtures');
         $loader = new YamlFileLoader($container, $locator);
         $loader->load('config.yml');
 
-
         $container->getCompilerPassConfig()->setOptimizationPasses(array());
+        $performanceMeterBundle = new PerformanceMeterBundle();
+        $performanceMeterBundle->build($container);
 
         return $container;
     }
